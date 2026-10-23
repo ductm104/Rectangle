@@ -6,6 +6,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <Carbon/Carbon.h>
 #include <CoreGraphics/CGEventTypes.h>
 #include <assert.h>
 #include <dlfcn.h>
@@ -64,6 +65,8 @@ extern CGSSpaceID CGSGetActiveSpace(CGSConnectionID connection) __attribute__((w
 
 static CFMachPortRef globalTap = NULL;
 static CFRunLoopSourceRef globalSource = NULL;
+static CFMachPortRef keyTap = NULL;
+static CFRunLoopSourceRef keySource = NULL;
 
 // Overlay detection state
 static bool overlayDetectionEnabled = false;
@@ -72,6 +75,9 @@ static bool overlayDetectionEnabled = false;
 static bool swipeOverrideEnabled = false;
 static bool swipeTracking = false;
 static bool swipeFired = false;
+
+// Ctrl+Left/Right keyUp to swallow after we handled its keyDown
+static int64_t swallowedKeyCode = -1;
 
 // Our macOS 27 swipes re-enter the tap with sourcePid == 0, so count them out instead
 static unsigned int syntheticEventsToPassThrough = 0;
@@ -159,6 +165,40 @@ static void swipe_override_switch(ISSDirection dir) {
         set_prediction(info.displayID, target);
         if (switchCallback) { switchCallback(target); }
     }
+}
+
+// The system's Ctrl+Left/Right shortcut fires before a session tap sees the key,
+// so keys are taken from a separate HID-level tap
+static CGEventRef keyTapCallback(CGEventTapProxy proxy, CGEventType type,
+                                 CGEventRef event, void *refcon) {
+    (void)proxy;
+    (void)refcon;
+
+    if (type == kCGEventTapDisabledByTimeout || type == kCGEventTapDisabledByUserInput) {
+        if (keyTap) CGEventTapEnable(keyTap, true);
+        return event;
+    }
+
+    if (!swipeOverrideEnabled) return event;
+
+    int64_t keyCode = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
+    if (type == kCGEventKeyUp) {
+        if (keyCode != swallowedKeyCode) return event;
+        swallowedKeyCode = -1;
+        return NULL;
+    }
+    if (type != kCGEventKeyDown) return event;
+    if (keyCode != kVK_LeftArrow && keyCode != kVK_RightArrow) return event;
+    CGEventFlags modifiers = CGEventGetFlags(event) &
+        (kCGEventFlagMaskControl | kCGEventFlagMaskAlternate | kCGEventFlagMaskCommand | kCGEventFlagMaskShift);
+    if (modifiers != kCGEventFlagMaskControl) return event;
+
+    swallowedKeyCode = keyCode;
+    // Holding the keys should not race through every Space
+    if (!CGEventGetIntegerValueField(event, kCGKeyboardEventAutorepeat)) {
+        iss_switch(keyCode == kVK_LeftArrow ? ISSDirectionLeft : ISSDirectionRight);
+    }
+    return NULL;
 }
 
 static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
@@ -719,6 +759,25 @@ bool iss_init(void) {
     CFRunLoopAddSource(CFRunLoopGetMain(), globalSource, kCFRunLoopCommonModes);
     CGEventTapEnable(globalTap, true);
 
+    keyTap = CGEventTapCreate(
+        kCGHIDEventTap,
+        kCGHeadInsertEventTap,
+        kCGEventTapOptionDefault,
+        CGEventMaskBit(kCGEventKeyDown) | CGEventMaskBit(kCGEventKeyUp),
+        keyTapCallback,
+        NULL
+    );
+    if (keyTap) {
+        keySource = CFMachPortCreateRunLoopSource(NULL, keyTap, 0);
+        if (keySource) {
+            CFRunLoopAddSource(CFRunLoopGetMain(), keySource, kCFRunLoopCommonModes);
+            CGEventTapEnable(keyTap, true);
+        } else {
+            CFRelease(keyTap);
+            keyTap = NULL;
+        }
+    }
+
     naturalScrolling = -1;
     CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
                                     &naturalScrolling, natural_scrolling_changed,
@@ -730,6 +789,17 @@ bool iss_init(void) {
 
 void iss_destroy(void) {
     syntheticEventsToPassThrough = 0;
+    swallowedKeyCode = -1;
+    if (keyTap) {
+        CGEventTapEnable(keyTap, false);
+        if (keySource) {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), keySource, kCFRunLoopCommonModes);
+            CFRelease(keySource);
+            keySource = NULL;
+        }
+        CFRelease(keyTap);
+        keyTap = NULL;
+    }
     if (predictionsDict) {
         CFRelease(predictionsDict);
         predictionsDict = NULL;
@@ -839,6 +909,7 @@ void iss_set_swipe_override(bool enabled) {
     if (!enabled) {
         swipeTracking = false;
         swipeFired = false;
+        swallowedKeyCode = -1;
     }
 }
 

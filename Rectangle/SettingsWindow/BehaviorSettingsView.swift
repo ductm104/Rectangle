@@ -394,8 +394,8 @@ struct BehaviorSettingsView: View {
                         Toggle("Show warning when windows cannot be resized small enough", isOn: $viewModel.showMinimumWindowSizeWarning)
                         Toggle("Show *Extra* shortcuts in menu", isOn: $viewModel.showAdditionalSizesInMenu)
                         VStack(alignment: .leading, spacing: 2) {
-                            Toggle("Switch Spaces instantly when swiping on the trackpad", isOn: $viewModel.instantSpaceSwitching)
-                            Text("Skips the slide animation when swiping between Spaces")
+                            Toggle("Switch Spaces instantly with trackpad swipes and Ctrl+←/→", isOn: $viewModel.instantSpaceSwitching)
+                            Text("Skips the slide animation when switching Spaces")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }

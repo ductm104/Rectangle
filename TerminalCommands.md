@@ -754,7 +754,7 @@ defaults write com.knollsoft.Rectangle directAnimationNativeResizeApps -string "
 
 ## Instant space switching
 
-Switching Spaces with a horizontal trackpad swipe normally plays a slide animation. When this is enabled, Rectangle intercepts the swipe and switches to the adjacent Space instantly instead. This uses the technique from [InstantSpaceSwitcher](https://github.com/jurplel/InstantSpaceSwitcher) and can also be toggled in Settings > Behavior > Extras.
+Switching Spaces with a horizontal trackpad swipe normally plays a slide animation. When this is enabled, Rectangle intercepts the swipe and switches to the adjacent Space instantly instead. Ctrl+Left Arrow and Ctrl+Right Arrow are intercepted the same way. This uses the technique from [InstantSpaceSwitcher](https://github.com/jurplel/InstantSpaceSwitcher) and can also be toggled in Settings > Behavior > Extras.
 
 ```bash
 defaults write com.knollsoft.Rectangle instantSpaceSwitching -bool true
