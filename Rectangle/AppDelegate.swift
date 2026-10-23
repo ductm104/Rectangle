@@ -76,7 +76,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         NotificationCenter.default.addObserver(self, selector: #selector(rebuildMenu), name: .showAdditionalSizesInMenuChanged, object: nil)
 
-        updaterController = SPUStandardUpdaterController(updaterDelegate: nil, userDriverDelegate: self)
+        // This fork must not pull upstream releases over itself; updates come from its Homebrew cask
+        updaterController = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: self)
         
         checkAutoCheckForUpdates()
         
@@ -130,7 +131,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             case #selector(viewLogging):
                 item.image = NSImage(systemSymbolName: "doc.text", accessibilityDescription: nil)
             case #selector(checkForUpdates):
-                item.image = NSImage(systemSymbolName: "arrow.down.circle", accessibilityDescription: nil)
+                item.isHidden = true
             default:
                 break
             }

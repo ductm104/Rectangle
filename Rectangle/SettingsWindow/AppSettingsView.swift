@@ -44,15 +44,11 @@ struct AppSettingsView: View {
             
             Section {
                 HStack {
-                    Button(viewModel.hasPendingUpdate ? "Update Available…" : "Check for Updates…") {
-                        viewModel.checkForUpdates()
-                    }
                     Spacer()
                     Text(viewModel.versionString)
                         .foregroundColor(.secondary)
                         .font(.callout)
                 }
-                Toggle("Check for updates automatically", isOn: $viewModel.checkForUpdatesAutomatically)
             }
 
             Section {
