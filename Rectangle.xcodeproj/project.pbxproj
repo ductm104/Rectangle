@@ -179,6 +179,9 @@
 		AA3A9E8B29230A82004EB8E5 /* CFExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3A9E8A29230A82004EB8E5 /* CFExtension.swift */; };
 		AA49DD1129B8C1B100690E13 /* TitleBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA49DD1029B8C1B100690E13 /* TitleBarManager.swift */; };
 		AA49DD2129B8C1B100690E13 /* GreenButtonManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA49DD2029B8C1B100690E13 /* GreenButtonManager.swift */; };
+		1C55A0070000000000000000 /* ISS.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C55A0010000000000000000 /* ISS.c */; };
+		1C55A0080000000000000000 /* event_serialize.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C55A0030000000000000000 /* event_serialize.c */; };
+		1C55A0090000000000000000 /* InstantSpacesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C55A0050000000000000000 /* InstantSpacesManager.swift */; };
 		AA4DA2FB28FDC94A00355CEB /* DispatchTimeExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4DA2FA28FDC94A00355CEB /* DispatchTimeExtension.swift */; };
 		AA536C2729005DD000579AC6 /* TimeoutCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA536C2629005DD000579AC6 /* TimeoutCache.swift */; };
 		AA69F83C29909A95001A81AF /* RightTodoCalculation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA69F83B29909A95001A81AF /* RightTodoCalculation.swift */; };
@@ -423,6 +426,12 @@
 		AA3A9E8A29230A82004EB8E5 /* CFExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CFExtension.swift; sourceTree = "<group>"; };
 		AA49DD1029B8C1B100690E13 /* TitleBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleBarManager.swift; sourceTree = "<group>"; };
 		AA49DD2029B8C1B100690E13 /* GreenButtonManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreenButtonManager.swift; sourceTree = "<group>"; };
+		1C55A0010000000000000000 /* ISS.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ISS.c; sourceTree = "<group>"; };
+		1C55A0020000000000000000 /* ISS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISS.h; sourceTree = "<group>"; };
+		1C55A0030000000000000000 /* event_serialize.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = event_serialize.c; sourceTree = "<group>"; };
+		1C55A0040000000000000000 /* event_serialize.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = event_serialize.h; sourceTree = "<group>"; };
+		1C55A0050000000000000000 /* InstantSpacesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstantSpacesManager.swift; sourceTree = "<group>"; };
+		1C55A0060000000000000000 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		AA4DA2FA28FDC94A00355CEB /* DispatchTimeExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DispatchTimeExtension.swift; sourceTree = "<group>"; };
 		AA536C2629005DD000579AC6 /* TimeoutCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeoutCache.swift; sourceTree = "<group>"; };
 		AA69F83B29909A95001A81AF /* RightTodoCalculation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RightTodoCalculation.swift; sourceTree = "<group>"; };
@@ -756,6 +765,7 @@
 				982470422EFA00010037B409 /* WindowManager+CooperativeCornerResize.swift */,
 				AA49DD1029B8C1B100690E13 /* TitleBarManager.swift */,
 				AA49DD2029B8C1B100690E13 /* GreenButtonManager.swift */,
+				1C55A0000000000000000000 /* InstantSpaces */,
 				98987AA62391890C00BE72C4 /* Logging */,
 				98ED704D306179160077BD10 /* SettingsWindow */,
 				989DA30C243FC0C3008C7AA4 /* WelcomeWindow */,
@@ -784,6 +794,19 @@
 				9824702122AF9B7E0037B409 /* Info.plist */,
 			);
 			path = RectangleTests;
+			sourceTree = "<group>";
+		};
+		1C55A0000000000000000000 /* InstantSpaces */ = {
+			isa = PBXGroup;
+			children = (
+				1C55A0050000000000000000 /* InstantSpacesManager.swift */,
+				1C55A0020000000000000000 /* ISS.h */,
+				1C55A0010000000000000000 /* ISS.c */,
+				1C55A0040000000000000000 /* event_serialize.h */,
+				1C55A0030000000000000000 /* event_serialize.c */,
+				1C55A0060000000000000000 /* LICENSE */,
+			);
+			path = InstantSpaces;
 			sourceTree = "<group>";
 		};
 		985B9BFA22BE218C00A2E8F0 /* Popover */ = {
@@ -1183,6 +1206,9 @@
 				AA69F83C29909A95001A81AF /* RightTodoCalculation.swift in Sources */,
 				AA49DD1129B8C1B100690E13 /* TitleBarManager.swift in Sources */,
 				AA49DD2129B8C1B100690E13 /* GreenButtonManager.swift in Sources */,
+				1C55A0070000000000000000 /* ISS.c in Sources */,
+				1C55A0080000000000000000 /* event_serialize.c in Sources */,
+				1C55A0090000000000000000 /* InstantSpacesManager.swift in Sources */,
 				9824700D22AF9B7D0037B409 /* AppDelegate.swift in Sources */,
 				98ED703A305DB1180077BD10 /* BehaviorSettingsView.swift in Sources */,
 				98A009BF251253AB00CFBF0C /* BottomRightSixthCalculation.swift in Sources */,

@@ -394,6 +394,12 @@ struct BehaviorSettingsView: View {
                         Toggle("Show warning when windows cannot be resized small enough", isOn: $viewModel.showMinimumWindowSizeWarning)
                         Toggle("Show *Extra* shortcuts in menu", isOn: $viewModel.showAdditionalSizesInMenu)
                         VStack(alignment: .leading, spacing: 2) {
+                            Toggle("Switch Spaces instantly when swiping on the trackpad", isOn: $viewModel.instantSpaceSwitching)
+                            Text("Skips the slide animation when swiping between Spaces")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
                             Toggle("Mouse button shortcuts act on the window under the pointer", isOn: $viewModel.mouseButtonShortcutsUseWindowUnderCursor)
                             Text("Keyboard shortcuts always act on the focused window")
                                 .font(.caption)

@@ -71,6 +71,13 @@ final class BehaviorSettingsViewModel {
         }
     }
     
+    var instantSpaceSwitching: Bool {
+        didSet {
+            Defaults.instantSpaceSwitching.enabled = instantSpaceSwitching
+            Notification.Name.instantSpaceSwitching.post()
+        }
+    }
+    
     var experimentalAnimations: Bool {
         didSet {
             guard oldValue != experimentalAnimations else { return }
@@ -201,6 +208,7 @@ final class BehaviorSettingsViewModel {
         self.doubleClickTitleBar = WindowAction(rawValue: Defaults.doubleClickTitleBar.value - 1) != nil
         self.autoMaximize = !Defaults.autoMaximize.userDisabled
         self.greenButtonOverride = Defaults.greenButtonOverride.enabled
+        self.instantSpaceSwitching = Defaults.instantSpaceSwitching.enabled
         self.experimentalAnimations = Defaults.experimentalWindowAnimations.enabled
         self.combinedDisplayMode = Defaults.combinedDisplayMode.userEnabled
         self.repeatedMaximizeRestoresPrevious = Defaults.repeatedMaximizeRestoresPrevious.enabled
@@ -263,6 +271,7 @@ final class BehaviorSettingsViewModel {
         self.doubleClickTitleBar = WindowAction(rawValue: Defaults.doubleClickTitleBar.value - 1) != nil
         self.autoMaximize = !Defaults.autoMaximize.userDisabled
         self.greenButtonOverride = Defaults.greenButtonOverride.enabled
+        self.instantSpaceSwitching = Defaults.instantSpaceSwitching.enabled
         self.experimentalAnimations = Defaults.experimentalWindowAnimations.enabled
         self.combinedDisplayMode = Defaults.combinedDisplayMode.userEnabled
         self.repeatedMaximizeRestoresPrevious = Defaults.repeatedMaximizeRestoresPrevious.enabled

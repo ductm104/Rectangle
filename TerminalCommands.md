@@ -751,3 +751,13 @@ The default list contains IINA (`com.colliderli.iina`). You can configure this l
 ```bash
 defaults write com.knollsoft.Rectangle directAnimationNativeResizeApps -string "[\"com.colliderli.iina\", \"org.videolan.vlc\"]"
 ```
+
+## Instant space switching
+
+Switching Spaces with a horizontal trackpad swipe normally plays a slide animation. When this is enabled, Rectangle intercepts the swipe and switches to the adjacent Space instantly instead. This uses the technique from [InstantSpaceSwitcher](https://github.com/jurplel/InstantSpaceSwitcher) and can also be toggled in Settings > Behavior > Extras.
+
+```bash
+defaults write com.knollsoft.Rectangle instantSpaceSwitching -bool true
+```
+
+Restart Rectangle after changing this preference from the terminal.
