@@ -9612,3 +9612,44 @@ final class SwitchSidesRepeatedCommandTests: XCTestCase {
         XCTAssertEqual(rect.height, expected.height, accuracy: 0.5, "height", file: file, line: line)
     }
 }
+
+final class SpaceSwitchActionTests: XCTestCase {
+
+    private let numberedActions: [WindowAction] = [
+        .spaceOne, .spaceTwo, .spaceThree, .spaceFour, .spaceFive, .spaceSix, .spaceSeven, .spaceEight,
+        .spaceNine, .spaceTen, .spaceEleven, .spaceTwelve, .spaceThirteen, .spaceFourteen, .spaceFifteen, .spaceSixteen
+    ]
+
+    private var allActions: [WindowAction] {
+        [.spaceLeft, .spaceRight, .lastSpace] + numberedActions
+    }
+
+    func testActionsAreActiveSoTheirShortcutsGetBound() {
+        for action in allActions {
+            XCTAssertTrue(WindowAction.active.contains(action), action.name)
+        }
+    }
+
+    func testNumberedActionsMapToSpaceIndexesInOrder() {
+        XCTAssertEqual(numberedActions.map(\.spaceIndex), (0..<16).map { Optional($0) })
+        XCTAssertNil(WindowAction.spaceLeft.spaceIndex)
+        XCTAssertNil(WindowAction.spaceRight.spaceIndex)
+        XCTAssertNil(WindowAction.lastSpace.spaceIndex)
+        XCTAssertNil(WindowAction.displayOne.spaceIndex)
+    }
+
+    func testActionsHaveTitlesButStayOutOfMenuAndWindowPlacement() {
+        for action in allActions {
+            XCTAssertNotNil(action.displayName, action.name)
+            XCTAssertTrue(action.excludedFromMenu, action.name)
+            XCTAssertFalse(action.isDragSnappable, action.name)
+            XCTAssertFalse(action.positionCycles, action.name)
+            XCTAssertNil(WindowCalculationFactory.calculationsByAction[action], action.name)
+        }
+    }
+
+    func testWindowActionsAreLeftToTheWindowManager() {
+        XCTAssertFalse(InstantSpacesManager.execute(parameters: ExecutionParameters(.leftHalf)))
+        XCTAssertFalse(InstantSpacesManager.execute(parameters: ExecutionParameters(.displayOne)))
+    }
+}

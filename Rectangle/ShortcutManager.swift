@@ -240,6 +240,10 @@ class ShortcutManager {
             return
         }
 
+        if InstantSpacesManager.execute(parameters: parameters) {
+            return
+        }
+
         // Check if repeat cycles displays
         if Defaults.subsequentExecutionMode.value == .cycleMonitor,
            parameters.source != .titleBar,

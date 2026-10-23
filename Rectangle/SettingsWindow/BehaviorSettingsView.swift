@@ -216,6 +216,54 @@ struct BehaviorSettingsView: View {
                 }
             }
 
+            // MARK: - Spaces
+            Section {
+                CustomDisclosureGroup {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Divider()
+                        VStack(alignment: .leading, spacing: 2) {
+                            Toggle("Switch Spaces instantly when swiping on the trackpad", isOn: $viewModel.instantSpaceSwitching)
+                            Text("Skips the slide animation when swiping between Spaces")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Toggle("Show the Space number when switching", isOn: $viewModel.showSpaceNumberOnSwitch)
+                        Divider()
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Switch to Space on the left")
+                                Spacer()
+                                windowActionShortcutView(.spaceLeft)
+                            }
+                            HStack {
+                                Text("Switch to Space on the right")
+                                Spacer()
+                                windowActionShortcutView(.spaceRight)
+                            }
+                            HStack {
+                                Text("Switch to last used Space")
+                                Spacer()
+                                windowActionShortcutView(.lastSpace)
+                            }
+                            ForEach(WindowAction.active.filter { $0.spaceIndex != nil }, id: \.rawValue) { action in
+                                HStack {
+                                    Text("Switch to Space \((action.spaceIndex ?? 0) + 1)")
+                                    Spacer()
+                                    windowActionShortcutView(action)
+                                }
+                            }
+                            Text("These shortcuts always switch instantly. To use ⌃← and ⌃→, first turn off \"Move left a space\" and \"Move right a space\" under Mission Control in System Settings > Keyboard > Keyboard Shortcuts")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.top, 4)
+                    .padding(.leading, 12)
+                } label: {
+                    Label("Spaces", systemImage: "squares.below.rectangle")
+                }
+            }
+
             // MARK: - Side Split Ratios
             Section {
                 CustomDisclosureGroup {
@@ -393,12 +441,6 @@ struct BehaviorSettingsView: View {
                         Toggle("Preserve side axis size for half actions, similar to Windows", isOn: $viewModel.halvesPreserveOtherAxisSize)
                         Toggle("Show warning when windows cannot be resized small enough", isOn: $viewModel.showMinimumWindowSizeWarning)
                         Toggle("Show *Extra* shortcuts in menu", isOn: $viewModel.showAdditionalSizesInMenu)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Toggle("Switch Spaces instantly when swiping on the trackpad", isOn: $viewModel.instantSpaceSwitching)
-                            Text("Skips the slide animation when swiping between Spaces")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
                         VStack(alignment: .leading, spacing: 2) {
                             Toggle("Mouse button shortcuts act on the window under the pointer", isOn: $viewModel.mouseButtonShortcutsUseWindowUnderCursor)
                             Text("Keyboard shortcuts always act on the focused window")

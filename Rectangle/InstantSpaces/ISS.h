@@ -94,6 +94,12 @@ void iss_set_switch_callback(ISSSwitchCallback callback);
  */
 void iss_reset_predictions(void);
 
+/**
+ * @brief Returns true while the Dock may still be animating our own switches,
+ * when space-change notifications report intermediate spaces.
+ */
+bool iss_switch_in_progress(void);
+
 // MARK: - Public API
 
 /**

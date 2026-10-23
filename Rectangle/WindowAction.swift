@@ -153,7 +153,26 @@ enum WindowAction: Int, Codable {
          thirdVerticalSixth = 143,
          fourthVerticalSixth = 144,
          fifthVerticalSixth = 145,
-         lastVerticalSixth = 146
+         lastVerticalSixth = 146,
+         spaceLeft = 147,
+         spaceRight = 148,
+         lastSpace = 149,
+         spaceOne = 150,
+         spaceTwo = 151,
+         spaceThree = 152,
+         spaceFour = 153,
+         spaceFive = 154,
+         spaceSix = 155,
+         spaceSeven = 156,
+         spaceEight = 157,
+         spaceNine = 158,
+         spaceTen = 159,
+         spaceEleven = 160,
+         spaceTwelve = 161,
+         spaceThirteen = 162,
+         spaceFourteen = 163,
+         spaceFifteen = 164,
+         spaceSixteen = 165
 
     // Order matters here - it's used in the menu
     static let active = [leftHalf, rightHalf, centerHalf, topHalf, bottomHalf,
@@ -191,7 +210,11 @@ enum WindowAction: Int, Codable {
                          cascadeActiveApp, tileActiveApp,
                          displayOne, displayTwo, displayThree, displayFour, displayFive,
                          displaySix, displaySeven, displayEight, displayNine,
-                         cycleStackedWindows, cycleStackedWindowsBackward
+                         cycleStackedWindows, cycleStackedWindowsBackward,
+                         spaceLeft, spaceRight, lastSpace,
+                         spaceOne, spaceTwo, spaceThree, spaceFour, spaceFive,
+                         spaceSix, spaceSeven, spaceEight, spaceNine, spaceTen,
+                         spaceEleven, spaceTwelve, spaceThirteen, spaceFourteen, spaceFifteen, spaceSixteen
     ]
 
     func post() {
@@ -232,7 +255,11 @@ enum WindowAction: Int, Codable {
              .fifthVerticalEighth, .sixthVerticalEighth, .seventhVerticalEighth, .lastVerticalEighth,
              .firstVerticalSixth, .secondVerticalSixth, .thirdVerticalSixth,
              .fourthVerticalSixth, .fifthVerticalSixth, .lastVerticalSixth,
-             .cycleStackedWindows, .cycleStackedWindowsBackward: return true
+             .cycleStackedWindows, .cycleStackedWindowsBackward,
+             .spaceLeft, .spaceRight, .lastSpace,
+             .spaceOne, .spaceTwo, .spaceThree, .spaceFour, .spaceFive,
+             .spaceSix, .spaceSeven, .spaceEight, .spaceNine, .spaceTen,
+             .spaceEleven, .spaceTwelve, .spaceThirteen, .spaceFourteen, .spaceFifteen, .spaceSixteen: return true
         default: return false
         }
     }
@@ -382,6 +409,25 @@ enum WindowAction: Int, Codable {
         case .displaySeven: return "displaySeven"
         case .displayEight: return "displayEight"
         case .displayNine: return "displayNine"
+        case .spaceLeft: return "spaceLeft"
+        case .spaceRight: return "spaceRight"
+        case .lastSpace: return "lastSpace"
+        case .spaceOne: return "spaceOne"
+        case .spaceTwo: return "spaceTwo"
+        case .spaceThree: return "spaceThree"
+        case .spaceFour: return "spaceFour"
+        case .spaceFive: return "spaceFive"
+        case .spaceSix: return "spaceSix"
+        case .spaceSeven: return "spaceSeven"
+        case .spaceEight: return "spaceEight"
+        case .spaceNine: return "spaceNine"
+        case .spaceTen: return "spaceTen"
+        case .spaceEleven: return "spaceEleven"
+        case .spaceTwelve: return "spaceTwelve"
+        case .spaceThirteen: return "spaceThirteen"
+        case .spaceFourteen: return "spaceFourteen"
+        case .spaceFifteen: return "spaceFifteen"
+        case .spaceSixteen: return "spaceSixteen"
         }
     }
 
@@ -407,6 +453,29 @@ enum WindowAction: Int, Codable {
         case .displaySeven: return 6
         case .displayEight: return 7
         case .displayNine: return 8
+        default: return nil
+        }
+    }
+
+    /// Zero-based index of the Space a "Switch to Space" action goes to
+    var spaceIndex: Int? {
+        switch self {
+        case .spaceOne: return 0
+        case .spaceTwo: return 1
+        case .spaceThree: return 2
+        case .spaceFour: return 3
+        case .spaceFive: return 4
+        case .spaceSix: return 5
+        case .spaceSeven: return 6
+        case .spaceEight: return 7
+        case .spaceNine: return 8
+        case .spaceTen: return 9
+        case .spaceEleven: return 10
+        case .spaceTwelve: return 11
+        case .spaceThirteen: return 12
+        case .spaceFourteen: return 13
+        case .spaceFifteen: return 14
+        case .spaceSixteen: return 15
         default: return nil
         }
     }
@@ -635,6 +704,44 @@ enum WindowAction: Int, Codable {
             String(localized: "Bottom Center Right Sixteenth")
         case .bottomRightSixteenth:
             String(localized: "Bottom Right Sixteenth")
+        case .spaceLeft:
+            String(localized: "Switch to Space on the Left")
+        case .spaceRight:
+            String(localized: "Switch to Space on the Right")
+        case .lastSpace:
+            String(localized: "Switch to Last Used Space")
+        case .spaceOne:
+            String(localized: "Switch to Space 1")
+        case .spaceTwo:
+            String(localized: "Switch to Space 2")
+        case .spaceThree:
+            String(localized: "Switch to Space 3")
+        case .spaceFour:
+            String(localized: "Switch to Space 4")
+        case .spaceFive:
+            String(localized: "Switch to Space 5")
+        case .spaceSix:
+            String(localized: "Switch to Space 6")
+        case .spaceSeven:
+            String(localized: "Switch to Space 7")
+        case .spaceEight:
+            String(localized: "Switch to Space 8")
+        case .spaceNine:
+            String(localized: "Switch to Space 9")
+        case .spaceTen:
+            String(localized: "Switch to Space 10")
+        case .spaceEleven:
+            String(localized: "Switch to Space 11")
+        case .spaceTwelve:
+            String(localized: "Switch to Space 12")
+        case .spaceThirteen:
+            String(localized: "Switch to Space 13")
+        case .spaceFourteen:
+            String(localized: "Switch to Space 14")
+        case .spaceFifteen:
+            String(localized: "Switch to Space 15")
+        case .spaceSixteen:
+            String(localized: "Switch to Space 16")
 
         case .topLeftThird, .topRightThird, .bottomLeftThird, .bottomRightThird,
              .doubleHeightUp, .doubleHeightDown, .doubleWidthLeft, .doubleWidthRight,
@@ -668,7 +775,11 @@ enum WindowAction: Int, Codable {
         switch self {
         case .center, .centerProminently, .nextDisplay, .previousDisplay,
              .displayOne, .displayTwo, .displayThree, .displayFour, .displayFive,
-             .displaySix, .displaySeven, .displayEight, .displayNine: return false
+             .displaySix, .displaySeven, .displayEight, .displayNine,
+             .spaceLeft, .spaceRight, .lastSpace,
+             .spaceOne, .spaceTwo, .spaceThree, .spaceFour, .spaceFive,
+             .spaceSix, .spaceSeven, .spaceEight, .spaceNine, .spaceTen,
+             .spaceEleven, .spaceTwelve, .spaceThirteen, .spaceFourteen, .spaceFifteen, .spaceSixteen: return false
         case .moveUp, .moveDown, .moveLeft, .moveRight: return Defaults.resizeOnDirectionalMove.enabled
         default: return true
         }
@@ -697,7 +808,12 @@ enum WindowAction: Int, Codable {
             .topLeftThird, .topRightThird, .bottomLeftThird, .bottomRightThird,
             // Specific displays
             .displayOne, .displayTwo, .displayThree, .displayFour, .displayFive,
-            .displaySix, .displaySeven, .displayEight, .displayNine:
+            .displaySix, .displaySeven, .displayEight, .displayNine,
+            // Spaces
+            .spaceLeft, .spaceRight, .lastSpace,
+            .spaceOne, .spaceTwo, .spaceThree, .spaceFour, .spaceFive,
+            .spaceSix, .spaceSeven, .spaceEight, .spaceNine, .spaceTen,
+            .spaceEleven, .spaceTwelve, .spaceThirteen, .spaceFourteen, .spaceFifteen, .spaceSixteen:
             return false
         default:
             return true
@@ -892,6 +1008,11 @@ enum WindowAction: Int, Codable {
         case .displayOne, .displayTwo, .displayThree, .displayFour, .displayFive,
              .displaySix, .displaySeven, .displayEight, .displayNine:
             return NSImage(imageLiteralResourceName: "nextDisplayTemplate")
+             .spaceLeft, .spaceRight, .lastSpace,
+             .spaceOne, .spaceTwo, .spaceThree, .spaceFour, .spaceFive,
+             .spaceSix, .spaceSeven, .spaceEight, .spaceNine, .spaceTen,
+             .spaceEleven, .spaceTwelve, .spaceThirteen, .spaceFourteen, .spaceFifteen, .spaceSixteen:
+            return NSImage()
         }
     }
 
@@ -956,7 +1077,11 @@ enum WindowAction: Int, Codable {
         case .almostMaximize, .previousDisplay, .nextDisplay, .larger, .smaller, .largerWidth, .smallerWidth, .largerHeight, .smallerHeight, .center, .centerProminently, .restore, .specified, .reverseAll, .tileAll, .tileRows, .tileColumns, .cascadeAll, .cascadeActiveApp, .tileActiveApp,
              .cycleStackedWindows, .cycleStackedWindowsBackward,
              .displayOne, .displayTwo, .displayThree, .displayFour, .displayFive,
-             .displaySix, .displaySeven, .displayEight, .displayNine:
+             .displaySix, .displaySeven, .displayEight, .displayNine,
+             .spaceLeft, .spaceRight, .lastSpace,
+             .spaceOne, .spaceTwo, .spaceThree, .spaceFour, .spaceFive,
+             .spaceSix, .spaceSeven, .spaceEight, .spaceNine, .spaceTen,
+             .spaceEleven, .spaceTwelve, .spaceThirteen, .spaceFourteen, .spaceFifteen, .spaceSixteen:
             return .none
         }
     }
@@ -976,7 +1101,11 @@ enum WindowAction: Int, Codable {
              .reverseAll, .tileAll, .tileRows, .tileColumns, .cascadeAll, .cascadeActiveApp, .tileActiveApp,
              .cycleStackedWindows, .cycleStackedWindowsBackward,
              .leftTodo, .rightTodo,
-             .specified:
+             .specified,
+             .spaceLeft, .spaceRight, .lastSpace,
+             .spaceOne, .spaceTwo, .spaceThree, .spaceFour, .spaceFive,
+             .spaceSix, .spaceSeven, .spaceEight, .spaceNine, .spaceTen,
+             .spaceEleven, .spaceTwelve, .spaceThirteen, .spaceFourteen, .spaceFifteen, .spaceSixteen:
             return false
         default:
             return true

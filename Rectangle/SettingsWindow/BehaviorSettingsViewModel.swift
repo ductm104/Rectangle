@@ -77,6 +77,12 @@ final class BehaviorSettingsViewModel {
             Notification.Name.instantSpaceSwitching.post()
         }
     }
+
+    var showSpaceNumberOnSwitch: Bool {
+        didSet {
+            Defaults.showSpaceNumberOnSwitch.enabled = showSpaceNumberOnSwitch
+        }
+    }
     
     var experimentalAnimations: Bool {
         didSet {
@@ -209,6 +215,7 @@ final class BehaviorSettingsViewModel {
         self.autoMaximize = !Defaults.autoMaximize.userDisabled
         self.greenButtonOverride = Defaults.greenButtonOverride.enabled
         self.instantSpaceSwitching = Defaults.instantSpaceSwitching.enabled
+        self.showSpaceNumberOnSwitch = Defaults.showSpaceNumberOnSwitch.enabled
         self.experimentalAnimations = Defaults.experimentalWindowAnimations.enabled
         self.combinedDisplayMode = Defaults.combinedDisplayMode.userEnabled
         self.repeatedMaximizeRestoresPrevious = Defaults.repeatedMaximizeRestoresPrevious.enabled
@@ -272,6 +279,7 @@ final class BehaviorSettingsViewModel {
         self.autoMaximize = !Defaults.autoMaximize.userDisabled
         self.greenButtonOverride = Defaults.greenButtonOverride.enabled
         self.instantSpaceSwitching = Defaults.instantSpaceSwitching.enabled
+        self.showSpaceNumberOnSwitch = Defaults.showSpaceNumberOnSwitch.enabled
         self.experimentalAnimations = Defaults.experimentalWindowAnimations.enabled
         self.combinedDisplayMode = Defaults.combinedDisplayMode.userEnabled
         self.repeatedMaximizeRestoresPrevious = Defaults.repeatedMaximizeRestoresPrevious.enabled

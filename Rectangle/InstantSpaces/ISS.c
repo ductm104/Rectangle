@@ -855,6 +855,10 @@ void iss_reset_predictions(void) {
     }
 }
 
+bool iss_switch_in_progress(void) {
+    return gestures_in_flight();
+}
+
 void iss_set_switch_callback(ISSSwitchCallback callback) {
     switchCallback = callback;
 }

@@ -133,6 +133,7 @@ class Defaults {
     static let combinedDisplayMode = OptionalBoolDefault(key: "combinedDisplayMode")
     static let greenButtonOverride = BoolDefault(key: "greenButtonOverride")
     static let instantSpaceSwitching = BoolDefault(key: "instantSpaceSwitching")
+    static let showSpaceNumberOnSwitch = BoolDefault(key: "showSpaceNumberOnSwitch")
     static let mouseButtonShortcutsUseWindowUnderCursor = BoolDefault(key: "mouseButtonShortcutsUseWindowUnderCursor")
     static let wasWelcomeDisplayed = BoolDefault(key: "wasWelcomeDisplayed")
     static var array: [Default] = [
@@ -243,6 +244,7 @@ class Defaults {
         moveFixedSizeToEdge,
         greenButtonOverride,
         instantSpaceSwitching,
+        showSpaceNumberOnSwitch,
         mouseButtonShortcutsUseWindowUnderCursor
     ]
 }
