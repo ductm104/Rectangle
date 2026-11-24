@@ -62,6 +62,7 @@ extern CFArrayRef CGSCopyManagedDisplaySpaces(CGSConnectionID connection, CFStri
 extern CFStringRef CGSCopyActiveMenuBarDisplayIdentifier(CGSConnectionID connection) __attribute__((weak_import));
 extern CGSConnectionID CGSMainConnectionID(void) __attribute__((weak_import));
 extern CGSSpaceID CGSGetActiveSpace(CGSConnectionID connection) __attribute__((weak_import));
+extern CFArrayRef CGSCopySpacesForWindows(CGSConnectionID connection, uint32_t mask, CFArrayRef windows) __attribute__((weak_import));
 
 static CFMachPortRef globalTap = NULL;
 static CFRunLoopSourceRef globalSource = NULL;
@@ -86,6 +87,9 @@ static unsigned int syntheticEventsToPassThrough = 0;
 static double gestureSpeed = 2000.0;
 
 static ISSSwitchCallback switchCallback = NULL;
+static ISSAppSwitchCallback appSwitchCallback = NULL;
+static bool appSwitcherArmed = false;
+static bool appSwitcherSingleForwardTab = false;
 
 // Predictions dictionary: DisplayID (CFStringRef) -> Index (CFNumberRef)
 static CFMutableDictionaryRef predictionsDict = NULL;
@@ -171,17 +175,49 @@ static void swipe_override_switch(ISSDirection dir) {
 // so keys are taken from a separate HID-level tap
 static CGEventRef keyTapCallback(CGEventTapProxy proxy, CGEventType type,
                                  CGEventRef event, void *refcon) {
-    (void)proxy;
     (void)refcon;
 
     if (type == kCGEventTapDisabledByTimeout || type == kCGEventTapDisabledByUserInput) {
+        appSwitcherArmed = false;
         if (keyTap) CGEventTapEnable(keyTap, true);
         return event;
     }
 
     if (!swipeOverrideEnabled) return event;
+    if (type == kCGEventLeftMouseDown || type == kCGEventRightMouseDown || type == kCGEventOtherMouseDown) {
+        appSwitcherArmed = false;
+        return event;
+    }
 
     int64_t keyCode = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
+    CGEventFlags flags = CGEventGetFlags(event);
+    if (type == kCGEventFlagsChanged) {
+        if (appSwitcherArmed && !(flags & kCGEventFlagMaskCommand)) {
+            appSwitcherArmed = false;
+            CGEventRef down = CGEventCreateKeyboardEvent(NULL, kVK_Escape, true);
+            CGEventRef up = CGEventCreateKeyboardEvent(NULL, kVK_Escape, false);
+            if (down && up && appSwitchCallback && appSwitchCallback(appSwitcherSingleForwardTab)) {
+                // Cancel native activation before the queued replacement starts.
+                CGEventSetFlags(down, 0);
+                CGEventSetFlags(up, 0);
+                CGEventTapPostEvent(proxy, down);
+                CGEventTapPostEvent(proxy, up);
+            }
+            if (down) CFRelease(down);
+            if (up) CFRelease(up);
+        }
+        return event;
+    }
+    if (type == kCGEventKeyDown) {
+        if (keyCode == kVK_Tab && (flags & kCGEventFlagMaskCommand) &&
+            !(flags & (kCGEventFlagMaskControl | kCGEventFlagMaskAlternate))) {
+            appSwitcherSingleForwardTab = !appSwitcherArmed && !(flags & kCGEventFlagMaskShift);
+            appSwitcherArmed = true;
+        } else {
+            appSwitcherSingleForwardTab = false;
+            if (keyCode == kVK_Escape) appSwitcherArmed = false;
+        }
+    }
     if (type == kCGEventKeyUp) {
         if (keyCode != swallowedKeyCode) return event;
         swallowedKeyCode = -1;
@@ -763,7 +799,8 @@ bool iss_init(void) {
         kCGHIDEventTap,
         kCGHeadInsertEventTap,
         kCGEventTapOptionDefault,
-        CGEventMaskBit(kCGEventKeyDown) | CGEventMaskBit(kCGEventKeyUp),
+        CGEventMaskBit(kCGEventKeyDown) | CGEventMaskBit(kCGEventKeyUp) | CGEventMaskBit(kCGEventFlagsChanged) |
+        CGEventMaskBit(kCGEventLeftMouseDown) | CGEventMaskBit(kCGEventRightMouseDown) | CGEventMaskBit(kCGEventOtherMouseDown),
         keyTapCallback,
         NULL
     );
@@ -788,6 +825,8 @@ bool iss_init(void) {
 }
 
 void iss_destroy(void) {
+    appSwitcherArmed = false;
+    appSwitchCallback = NULL;
     syntheticEventsToPassThrough = 0;
     swallowedKeyCode = -1;
     if (keyTap) {
@@ -904,9 +943,60 @@ bool iss_switch_to_index(unsigned int targetIndex) {
     return !outOfBounds;
 }
 
+static bool window_space_target(CFArrayRef displays, CFArrayRef windowSpaces,
+                                const ISSSpaceInfo *info, unsigned int *targetIndex) {
+    if (CFArrayGetCount(windowSpaces) != 1) return false;
+    CFStringRef displayID = CFStringCreateWithCString(NULL, info->displayID, kCFStringEncodingUTF8);
+    bool found = false;
+    for (CFIndex d = 0; d < CFArrayGetCount(displays); d++) {
+        CFDictionaryRef display = CFArrayGetValueAtIndex(displays, d);
+        if (CFGetTypeID(display) != CFDictionaryGetTypeID()) continue;
+        CFStringRef identifier = CFDictionaryGetValue(display, CFSTR("Display Identifier"));
+        if (!identifier || !CFEqual(identifier, displayID)) continue;
+        CFArrayRef spaces = CFDictionaryGetValue(display, CFSTR("Spaces"));
+        if (!spaces || CFGetTypeID(spaces) != CFArrayGetTypeID()) break;
+        for (CFIndex s = 0; s < CFArrayGetCount(spaces); s++) {
+            CFDictionaryRef space = CFArrayGetValueAtIndex(spaces, s);
+            if (CFGetTypeID(space) != CFDictionaryGetTypeID()) continue;
+            CFNumberRef spaceID = CFDictionaryGetValue(space, CFSTR("id64"));
+            if (spaceID && CFEqual(spaceID, CFArrayGetValueAtIndex(windowSpaces, 0))) {
+                *targetIndex = (unsigned int)s;
+                found = *targetIndex != info->currentIndex;
+                break;
+            }
+        }
+        break;
+    }
+    CFRelease(displayID);
+    return found;
+}
+
+bool iss_get_window_space_target(uint32_t windowID, ISSSpaceInfo *info, unsigned int *targetIndex) {
+    if (!info || !targetIndex || !windowID ||
+        &CGSCopySpacesForWindows == NULL || !iss_get_space_info(info)) return false;
+    unsigned int predicted;
+    if (get_prediction(info->displayID, &predicted) && predicted != info->currentIndex) return false;
+    CFNumberRef window = CFNumberCreate(NULL, kCFNumberSInt32Type, &windowID);
+    CFArrayRef windows = CFArrayCreate(NULL, (const void **)&window, 1, &kCFTypeArrayCallBacks);
+    CGSConnectionID connection = CGSMainConnectionID();
+    CFArrayRef spaces = CGSCopySpacesForWindows(connection, 7, windows);
+    CFArrayRef displays = CGSCopyManagedDisplaySpaces(connection, NULL);
+    bool found = spaces && displays && window_space_target(displays, spaces, info, targetIndex);
+    if (spaces) CFRelease(spaces);
+    if (displays) CFRelease(displays);
+    CFRelease(windows);
+    CFRelease(window);
+    return found;
+}
+
+void iss_set_app_switch_callback(ISSAppSwitchCallback callback) {
+    appSwitchCallback = callback;
+}
+
 void iss_set_swipe_override(bool enabled) {
     swipeOverrideEnabled = enabled;
     if (!enabled) {
+        appSwitcherArmed = false;
         swipeTracking = false;
         swipeFired = false;
         swallowedKeyCode = -1;
