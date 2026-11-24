@@ -17,9 +17,9 @@ static void record_event(CGEventTapProxy proxy, CGEventRef event) {
 
 static unsigned int callbackCount;
 static bool replaceCommit;
-static bool lastSingleForwardTab;
-static bool prepare_switch(bool singleForwardTab) {
-    lastSingleForwardTab = singleForwardTab;
+static uint32_t lastForwardTabs;
+static bool prepare_switch(uint32_t forwardTabs) {
+    lastForwardTabs = forwardTabs;
     callbackCount++;
     return replaceCommit;
 }
@@ -95,13 +95,13 @@ static void test_cmd_tab_commit(void) {
     assert(callbackCount == 0);
     send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand);
     send_key(kCGEventFlagsChanged, kVK_Command, 0);
-    assert(callbackCount == 1 && postedEvents == 0 && lastSingleForwardTab);
+    assert(callbackCount == 1 && postedEvents == 0 && lastForwardTabs == 1);
     replaceCommit = true;
     send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand | kCGEventFlagMaskShift);
     send_key(kCGEventFlagsChanged, kVK_Command, kCGEventFlagMaskCommand);
     assert(callbackCount == 1);
     send_key(kCGEventFlagsChanged, kVK_Command, 0);
-    assert(callbackCount == 2 && postedEvents == 2 && !lastSingleForwardTab);
+    assert(callbackCount == 2 && postedEvents == 2 && lastForwardTabs == 0);
     send_key(kCGEventFlagsChanged, kVK_Command, 0);
     assert(callbackCount == 2);
     send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand);
@@ -117,17 +117,26 @@ static void test_cmd_tab_commit(void) {
     send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand);
     send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand);
     send_key(kCGEventFlagsChanged, kVK_Command, 0);
-    assert(callbackCount == 3 && !lastSingleForwardTab);
+    assert(callbackCount == 3 && lastForwardTabs == 2);
     send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand);
     send_key(kCGEventKeyDown, kVK_LeftArrow, kCGEventFlagMaskCommand);
     send_key(kCGEventFlagsChanged, kVK_Command, 0);
-    assert(callbackCount == 4 && !lastSingleForwardTab);
+    assert(callbackCount == 4 && lastForwardTabs == 0);
     send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand);
     CGEventRef click = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, CGPointZero, kCGMouseButtonLeft);
     assert(keyTapCallback(NULL, kCGEventLeftMouseDown, click, NULL) == click);
     CFRelease(click);
     send_key(kCGEventFlagsChanged, kVK_Command, 0);
     assert(callbackCount == 4);
+    send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand);
+    send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand);
+    send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand);
+    send_key(kCGEventFlagsChanged, kVK_Command, 0);
+    assert(callbackCount == 5 && lastForwardTabs == 3);
+    send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand | kCGEventFlagMaskShift);
+    send_key(kCGEventKeyDown, kVK_Tab, kCGEventFlagMaskCommand);
+    send_key(kCGEventFlagsChanged, kVK_Command, 0);
+    assert(callbackCount == 6 && lastForwardTabs == 0);
     iss_destroy();
     assert(appSwitchCallback == NULL);
 }

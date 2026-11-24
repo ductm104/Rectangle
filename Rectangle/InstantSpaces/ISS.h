@@ -75,8 +75,9 @@ bool iss_switch_to_index(unsigned int targetIndex);
  */
 void iss_set_swipe_override(bool enabled);
 
+// Zero forwardTabs means the selection requires Dock lookup (e.g. Shift+Tab or arrow keys).
 // Return true only after scheduling a replacement for the native Cmd+Tab commit.
-typedef bool (*ISSAppSwitchCallback)(bool singleForwardTab);
+typedef bool (*ISSAppSwitchCallback)(uint32_t forwardTabs);
 void iss_set_app_switch_callback(ISSAppSwitchCallback callback);
 bool iss_get_window_space_target(uint32_t windowID, ISSSpaceInfo *info, unsigned int *targetIndex);
 

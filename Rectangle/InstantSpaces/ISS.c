@@ -89,7 +89,7 @@ static double gestureSpeed = 2000.0;
 static ISSSwitchCallback switchCallback = NULL;
 static ISSAppSwitchCallback appSwitchCallback = NULL;
 static bool appSwitcherArmed = false;
-static bool appSwitcherSingleForwardTab = false;
+static uint32_t appSwitcherForwardTabs = 0;
 
 // Predictions dictionary: DisplayID (CFStringRef) -> Index (CFNumberRef)
 static CFMutableDictionaryRef predictionsDict = NULL;
@@ -196,7 +196,7 @@ static CGEventRef keyTapCallback(CGEventTapProxy proxy, CGEventType type,
             appSwitcherArmed = false;
             CGEventRef down = CGEventCreateKeyboardEvent(NULL, kVK_Escape, true);
             CGEventRef up = CGEventCreateKeyboardEvent(NULL, kVK_Escape, false);
-            if (down && up && appSwitchCallback && appSwitchCallback(appSwitcherSingleForwardTab)) {
+            if (down && up && appSwitchCallback && appSwitchCallback(appSwitcherForwardTabs)) {
                 // Cancel native activation before the queued replacement starts.
                 CGEventSetFlags(down, 0);
                 CGEventSetFlags(up, 0);
@@ -211,10 +211,16 @@ static CGEventRef keyTapCallback(CGEventTapProxy proxy, CGEventType type,
     if (type == kCGEventKeyDown) {
         if (keyCode == kVK_Tab && (flags & kCGEventFlagMaskCommand) &&
             !(flags & (kCGEventFlagMaskControl | kCGEventFlagMaskAlternate))) {
-            appSwitcherSingleForwardTab = !appSwitcherArmed && !(flags & kCGEventFlagMaskShift);
+            if (flags & kCGEventFlagMaskShift) {
+                appSwitcherForwardTabs = 0;
+            } else if (!appSwitcherArmed) {
+                appSwitcherForwardTabs = 1;
+            } else if (appSwitcherForwardTabs > 0) {
+                appSwitcherForwardTabs = appSwitcherForwardTabs == UINT32_MAX ? 0 : appSwitcherForwardTabs + 1;
+            }
             appSwitcherArmed = true;
         } else {
-            appSwitcherSingleForwardTab = false;
+            appSwitcherForwardTabs = 0;
             if (keyCode == kVK_Escape) appSwitcherArmed = false;
         }
     }

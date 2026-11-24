@@ -38,8 +38,8 @@ class InstantSpacesManager {
         iss_set_overlay_detection_enabled(true)
         iss_set_swipe_override(true)
         Self.activeManager = self
-        iss_set_app_switch_callback { singleForwardTab in
-            InstantSpacesManager.activeManager?.prepareAppSwitch(singleForwardTab: singleForwardTab) ?? false
+        iss_set_app_switch_callback { forwardTabs in
+            InstantSpacesManager.activeManager?.prepareAppSwitch(forwardTabs: forwardTabs) ?? false
         }
         rememberApplication(NSWorkspace.shared.frontmostApplication)
         if activationObserver == nil {
@@ -77,22 +77,33 @@ class InstantSpacesManager {
         return attribute(selected[0], kAXTitleAttribute) as? String
     }
 
-    private func prepareAppSwitch(singleForwardTab: Bool) -> Bool {
+    static func appSwitchTarget(forwardTabs: UInt32, recentPIDs: [pid_t], frontmostPID: pid_t?,
+                                selectedPID: () -> pid_t?) -> pid_t? {
+        // Dock may not expose the current selection before a quick Cmd+Tab commits.
+        if forwardTabs > 0, Int(forwardTabs) < recentPIDs.count, recentPIDs[0] == frontmostPID {
+            return recentPIDs[Int(forwardTabs)]
+        }
+        return selectedPID()
+    }
+
+    private func prepareAppSwitch(forwardTabs: UInt32) -> Bool {
         appSwitchGeneration += 1
-        let app: NSRunningApplication
-        if let name = selectedApplicationName() {
+        let frontmost = NSWorkspace.shared.frontmostApplication
+        rememberApplication(frontmost)
+        recentApplications.removeAll { $0.isTerminated }
+        let targetPID = Self.appSwitchTarget(
+            forwardTabs: forwardTabs,
+            recentPIDs: recentApplications.map { $0.processIdentifier },
+            frontmostPID: frontmost?.processIdentifier
+        ) {
+            guard let name = self.selectedApplicationName() else { return nil }
             let matches = NSWorkspace.shared.runningApplications.filter {
                 $0.activationPolicy == .regular && $0.localizedName == name && !$0.isTerminated
             }
-            guard matches.count == 1, let selected = matches.first else { return false }
-            app = selected
-        } else {
-            // A quick Cmd+Tab can commit before Dock exposes the switcher to Accessibility.
-            recentApplications.removeAll { $0.isTerminated }
-            guard singleForwardTab, recentApplications.count >= 2,
-                  recentApplications[0].processIdentifier == NSWorkspace.shared.frontmostApplication?.processIdentifier else { return false }
-            app = recentApplications[1]
+            return matches.count == 1 ? matches.first?.processIdentifier : nil
         }
+        guard let targetPID = targetPID,
+              let app = NSRunningApplication(processIdentifier: targetPID), !app.isTerminated else { return false }
         let appElement = AXUIElementCreateApplication(app.processIdentifier)
         AXUIElementSetMessagingTimeout(appElement, 0.02)
         guard let value = attribute(appElement, kAXFocusedWindowAttribute),
